@@ -118,7 +118,7 @@
   transform: scale(1);
 }
 
-/* overlay */
+
 .hero-overlay {
   position: absolute;
   inset: 0;
@@ -127,7 +127,7 @@
   z-index: 1;
 }
 
-/* content block */
+
 .hero-content {
   position: relative;
   z-index: 2;
@@ -236,7 +236,58 @@
   .hero-prev, .hero-next { display: none; } 
 }
 
-    
+  .hero-pagination {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;                  /* slightly above progress bar */
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 4;
+  padding: 0 6px;
+  pointer-events: auto;
+}
+
+/* each page indicator is a button for accessibility */
+.hero-page {
+  display: inline-block;
+  width: 46px;                   /* length of the short line */
+  height: 6px;                   /* thickness */
+  border-radius: 6px;
+  background: rgba(255,255,255,0.18);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform .18s ease, background .25s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18) inset;
+}
+
+
+.hero-page:hover,
+.hero-page:focus {
+  transform: translateY(-2px) scale(1.02);
+  outline: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+}
+
+
+.hero-page.active {
+  background: linear-gradient(90deg,#fff 0%, #ffd36c 60%, #ff6b3d 100%);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.36);
+}
+
+
+.hero-page.done {
+  background: rgba(255,255,255,0.95);
+  opacity: 0.6;
+}
+
+
+@media (max-width: 700px) {
+  .hero-page { width: 34px; height: 5px; }
+  .hero-pagination { gap: 8px; bottom: 12px; }
+}
    footer {
   min-height: 75vh;
   height: auto;
@@ -371,7 +422,7 @@
   </div>
   <section class="hero" aria-label="Featured content">
   <div class="hero-slider" id="heroSlider">
-    <article class="hero-slide active" style="background-image:url('hero1.jpg')" role="group" aria-roledescription="slide" aria-label="Slide 1 of 3">
+    <article class="hero-slide active" style="background-image:url('download.jpg')" role="group" aria-roledescription="slide" aria-label="Slide 1 of 3">
       <div class="hero-overlay"></div>
       <div class="hero-content">
         <span class="brand-label">BRAND</span>
@@ -399,6 +450,7 @@
 
   <div class="hero-progress-wrap" aria-hidden="true">
     <div class="hero-progress" id="heroProgress"></div>
+    <nav class="hero-pagination" id="heroPagination" aria-label="Slide pages"></nav>
   </div>
 </section>
   <footer>
@@ -506,6 +558,84 @@
   });
   resetProgress();
   startAuto();
+})();
+    (function(){
+  const slider = document.getElementById('heroSlider');
+  const slides = slider.querySelectorAll('.hero-slide');
+  const pagination = document.getElementById('heroPagination');
+
+  if (!pagination || slides.length <= 1) return; 
+
+  // build buttons dynamically (one per slide)
+  slides.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'hero-page';
+    btn.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+    btn.setAttribute('data-index', i);
+    btn.type = 'button';
+
+    btn.addEventListener('click', (e) => {
+      const idx = Number(e.currentTarget.dataset.index);
+      show(idx);          // show is assumed from your hero script
+      startAuto();        // restart auto-advance
+    });
+    pagination.appendChild(btn);
+  });
+
+
+  function updatePagination(currentIndex) {
+    const items = pagination.querySelectorAll('.hero-page');
+    items.forEach((btn, idx) => {
+      btn.classList.remove('active', 'done');
+      btn.removeAttribute('aria-current');
+      if (idx < currentIndex) {
+        // pages already visited
+        btn.classList.add('done');
+      }
+      if (idx === currentIndex) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-current', 'true');
+      }
+    });
+  }
+
+  if (typeof window === 'object' && typeof window.heroPatch === 'undefined') {
+    
+    
+    try {
+      if (typeof show === 'function') {
+        const originalShow = show;
+        window.show = function(index) {
+          originalShow(index);
+         
+          const activeIndex = Array.from(slides).findIndex(s => s.classList.contains('active'));
+          updatePagination(activeIndex >= 0 ? activeIndex : 0);
+        };
+      } else {
+     
+        const obs = new MutationObserver(() => {
+          const activeIndex = Array.from(slides).findIndex(s => s.classList.contains('active'));
+          updatePagination(activeIndex >= 0 ? activeIndex : 0);
+        });
+        slides.forEach(s => obs.observe(s, { attributes: true, attributeFilter: ['class'] }));
+      }
+    } catch (e) {
+  
+      setInterval(() => {
+        const activeIndex = Array.from(slides).findIndex(s => s.classList.contains('active'));
+        updatePagination(activeIndex >= 0 ? activeIndex : 0);
+      }, 200);
+    }
+ 
+    window.heroPatch = true;
+  }
+
+
+  const initialActive = Array.from(slides).findIndex(s => s.classList.contains('active'));
+  updatePagination(initialActive >= 0 ? initialActive : 0);
+
+
+
 })();
 </script>
 </body>
