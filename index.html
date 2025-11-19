@@ -184,9 +184,10 @@
   transition: transform .15s ease, box-shadow .15s ease;
 }
 .hero-cta:hover { 
-transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.32);
-background: black;
-color: white;
+transform: translateY(-3px); 
+box-shadow: 0 10px 24px rgba(0,0,0,0.32);
+background: #222;
+color: #fff;
                 }
 
 
@@ -558,7 +559,7 @@ color: white;
     startAuto();
   });
 
-  // init
+
   slides.forEach((s,i) => {
     if (i !== current) s.classList.remove('active');
   });
