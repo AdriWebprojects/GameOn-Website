@@ -45,7 +45,7 @@
     .socialiconnav a i { font-size: 2em; vertical-align: middle; }
 
 .main-bg-video-container {
-  position: absolute;
+  position: fixed;
   left: 0;
   width: 100vw;
   overflow: hidden;
@@ -201,11 +201,15 @@ function resizeBgVideo() {
   const navBottom = nav.getBoundingClientRect().bottom + window.scrollY;
   const footerTop = footer.getBoundingClientRect().top + window.scrollY;
 
+  
+  container.style.position = 'fixed';
+  container.style.left = 0;
+  container.style.width = '100vw';
   container.style.top = navBottom + 'px';
   container.style.height = (footerTop - navBottom) + 'px';
 }
 window.addEventListener('resize', resizeBgVideo);
 window.addEventListener('DOMContentLoaded', resizeBgVideo);
-window.addEventListener('scroll', resizeBgVideo);
+
 </script>
 </html>
